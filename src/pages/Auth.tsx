@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryMindLogo } from "@/components/QueryMindLogo";
+import { Home } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +24,7 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/');
+        navigate('/dashboard');
       }
     };
     checkUser();
@@ -33,7 +34,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/dashboard`;
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -77,7 +78,7 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
-      navigate('/');
+      navigate('/dashboard');
     }
     setLoading(false);
   };
@@ -87,7 +88,7 @@ const Auth = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`
+        redirectTo: `${window.location.origin}/dashboard`
       }
     });
 
@@ -105,6 +106,14 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="mb-4 text-muted-foreground hover:text-foreground flex items-center gap-2 mx-auto"
+          >
+            <Home className="w-4 h-4" />
+            Back to Home
+          </Button>
           <QueryMindLogo size="md" showText={false} />
           <h1 className="text-2xl font-bold text-foreground">Welcome to QueryMind</h1>
           <p className="text-muted-foreground mt-2">Sign in to access your conversation history</p>
