@@ -1,13 +1,18 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { QueryMindLogo } from "@/components/QueryMindLogo";
 import { SearchInterface } from "@/components/SearchInterface";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ConversationHistory } from "@/components/ConversationHistory";
-import { useQueryMind } from "@/hooks/useQueryMind";
+import { useQueryMind } from "@/hooks/useQueryMindWithAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, LogOut, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Index = () => {
+  const { user, loading, signOut, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const {
     conversations,
     currentConversation,
@@ -17,6 +22,33 @@ const Index = () => {
     startNewConversation,
     clearHistory,
   } = useQueryMind();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate('/auth');
+    }
+  }, [loading, isAuthenticated, navigate]);
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (!error) {
+      navigate('/auth');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="animate-pulse">
+          <QueryMindLogo size="lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect to auth
+  }
 
   const isHomePage = !currentConversation || currentConversation.messages.length === 0;
 
@@ -37,15 +69,31 @@ const Index = () => {
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <QueryMindLogo size="sm" />
             
-            {currentConversation && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <User className="w-4 h-4" />
+                <span>{user?.user_metadata?.full_name || user?.email}</span>
+              </div>
+              
+              {currentConversation && (
+                <Button
+                  onClick={startNewConversation}
+                  className="button-primary flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Search
+                </Button>
+              )}
+              
               <Button
-                onClick={startNewConversation}
-                className="button-primary flex items-center gap-2"
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-muted-foreground hover:text-foreground"
               >
-                <Plus className="h-4 w-4" />
-                New Search
+                <LogOut className="w-4 h-4" />
               </Button>
-            )}
+            </div>
           </div>
         </header>
 
